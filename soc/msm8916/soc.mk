@@ -23,6 +23,7 @@ TARGET_ARCH_VARIANT := armv7-a
 TARGET_CPU_VARIANT := generic
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
+TARGET_KERNEL_ARCH := $(TARGET_ARCH)
 
 TARGET_NO_BOOTLOADER := false
 TARGET_NO_KERNEL := false
@@ -42,4 +43,4 @@ BOARD_SEPOLICY_DIRS += $(LOCAL_PATH)/sepolicy
 
 # Set up the local kernel.
 TARGET_KERNEL_SRC := hardware/bsp/kernel/qcom/android-msm-3.10
-KERNEL_DEFCONFIG := dragonboard_defconfig
+TARGET_KERNEL_DEFCONFIG := dragonboard_defconfig
