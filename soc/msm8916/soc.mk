@@ -39,7 +39,10 @@ PRODUCT_COPY_FILES += \
   system/core/rootdir/init.usb.rc:root/init.usb.rc \
   system/core/rootdir/ueventd.rc:root/ueventd.rc \
 
-BOARD_SEPOLICY_DIRS += $(LOCAL_PATH)/sepolicy
+# TODO: Move common/prebuilts/sepolicy include to audio_prebuilts.mk
+BOARD_SEPOLICY_DIRS += \
+	$(LOCAL_PATH)/sepolicy \
+	$(TOP)/hardware/bsp/qcom/common/prebuilts/sepolicy
 
 # Set up the local kernel.
 TARGET_KERNEL_SRC := hardware/bsp/kernel/qcom/android-msm-3.10
