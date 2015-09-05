@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-WLAN_FIRMWARE_SRC = hardware/bsp/qcom/peripheral/wifi/wcn3620
+WLAN_BSP_SRC = hardware/bsp/qcom/peripheral/wifi/wcn3620
 FIRMWARE_DST = system/vendor/firmware
 
 # Wireless peripheral firmware -- loaded by drivers/net/wireless/wcnss.
 WCNSS_FILES := mdt b00 b01 b02 b04 b06 b09 b10 b11
 WCNSS_COPY_FILES += \
-  $(join $(patsubst %, $(WLAN_FIRMWARE_SRC)/wcnss.%, $(WCNSS_FILES)), $(patsubst %, :$(FIRMWARE_DST)/wcnss.%, $(WCNSS_FILES)))
+  $(join $(patsubst %, $(WLAN_BSP_SRC)/wcnss.%, $(WCNSS_FILES)), $(patsubst %, :$(FIRMWARE_DST)/wcnss.%, $(WCNSS_FILES)))
 
 PRODUCT_COPY_FILES += $(WCNSS_COPY_FILES)
 
@@ -32,6 +32,9 @@ PRIMA_FILES = \
   WCNSS_qcom_wlan_nv.bin \
   WCNSS_wlan_dictionary.dat
 PRIMA_COPY_FILES += \
-  $(join $(patsubst %, $(WLAN_FIRMWARE_SRC)/%, $(PRIMA_FILES)), $(patsubst %, :$(WLAN_FIRMWARE_DST)/%, $(PRIMA_FILES)))
+  $(join $(patsubst %, $(WLAN_BSP_SRC)/%, $(PRIMA_FILES)), $(patsubst %, :$(WLAN_FIRMWARE_DST)/%, $(PRIMA_FILES)))
 
 PRODUCT_COPY_FILES += $(PRIMA_COPY_FILES)
+WIFI_DRIVER_HAL_MODULE := wifi_driver.$(soc_name)
+
+BOARD_SEPOLICY_DIRS += $(WLAN_BSP_SRC)/sepolicy

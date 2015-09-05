@@ -1,0 +1,3 @@
+# These files will be accessed by the HAL during wifi_init setup.
+/dev/wcnss_wlan            u:object_r:connectivity_device:s0
+/sys/devices/soc.0/a000000.qcom,wcnss-wlan/serial_number  u:object_r:connectivity_sysfs_entry:s0
