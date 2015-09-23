@@ -19,7 +19,7 @@ on early-init
     mkdir /firmware 0771 system system
 
 on fs
-    mount_all /fstab.device
+    mount_all /fstab.${ro.hardware}
     mkdir /dev/usb-ffs 0770 shell shell
     mkdir /dev/usb-ffs/adb 0770 shell shell
     mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000
