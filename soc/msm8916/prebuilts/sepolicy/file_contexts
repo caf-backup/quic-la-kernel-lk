@@ -19,7 +19,7 @@
 
 /sys/bus/esoc(/.*)?                                    u:object_r:sysfs_esoc:s0
 
-sys/devices/virtual/hsicctl/hsicctl1[0-9]/modem_wait   u:object_r:sysfs_hsic_modem_wait:s0
+/sys/devices/virtual/hsicctl/hsicctl1[0-9]/modem_wait  u:object_r:sysfs_hsic_modem_wait:s0
 /sys/devices/virtual/hsicctl/hsicctl[0-9]/modem_wait   u:object_r:sysfs_hsic_modem_wait:s0
 /sys/bus/platform/drivers/xhci_msm_hsic(/.*)?          u:object_r:sysfs_hsic:s0
 /sys/devices/msm_hsic_host/host_ready                  u:object_r:sysfs_hsic_host_rdy:s0
