@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ifeq ($(WIFI_DRIVER_HAL_PERIPHERAL),wcn3620)
+
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -21,8 +23,10 @@ LOCAL_C_INCLUDES += device/generic/brillo/wifi_driver_hal/include
 LOCAL_SHARED_LIBRARIES := libcutils
 LOCAL_CPPFLAGS += -DLOG_TAG=\"hal_qcwcn\"
 LOCAL_SRC_FILES := wifi_driver_hal_qcwcn.cpp
-LOCAL_MODULE := wifi_driver.$(soc_name)
+LOCAL_MODULE := $(WIFI_DRIVER_HAL_MODULE)
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
+
+endif
