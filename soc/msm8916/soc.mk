@@ -45,8 +45,9 @@ BOARD_SEPOLICY_DIRS += \
 	$(LOCAL_PATH)/prebuilts/sepolicy \
 
 # Set up the local kernel.
-TARGET_KERNEL_SRC := hardware/bsp/kernel/qcom/android-msm-3.10
-TARGET_KERNEL_DEFCONFIG := dragonboard_defconfig
+TARGET_KERNEL_SRC := hardware/bsp/kernel/qcom/qcom-msm-3.10
+TARGET_KERNEL_DEFCONFIG := msm8916-perf_defconfig
+TARGET_KERNEL_CONFIGS := $(realpath $(LOCAL_PATH)/soc.kconf)
 
 # Include prebuilts to detect audio devices.
 PRODUCT_COPY_FILES += \
