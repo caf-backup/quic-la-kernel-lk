@@ -51,14 +51,14 @@ TARGET_KERNEL_CONFIGS := $(realpath $(LOCAL_PATH)/soc.kconf)
 
 # Include prebuilts to detect audio devices.
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/prebuilts/init.audio.rc:system/etc/init/init.audio.rc \
+	$(LOCAL_PATH)/prebuilts/audio.rc:system/etc/init/audio.rc \
 
-# Audio daemons
+# Audio daemons.
 PRODUCT_COPY_FILES += \
 	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/daemons/rmt_storage:/system/bin/rmt_storage \
 	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/daemons/qmuxd:/system/bin/qmuxd \
 
-# Audio libs
+# Audio libs.
 PRODUCT_COPY_FILES += \
 	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmi_common_so.so:/system/lib/libqmi_common_so.so \
 	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmi_csi.so:/system/lib/libqmi_csi.so \
