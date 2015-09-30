@@ -76,6 +76,8 @@ struct pcm_config pcm_config_deep_buffer = {
     .format = PCM_FORMAT_S16_LE,
     .start_threshold = DEEP_BUFFER_OUTPUT_PERIOD_SIZE / 4,
     .stop_threshold = INT_MAX,
+    .silence_threshold = 0,
+    .silence_size = 0,
     .avail_min = DEEP_BUFFER_OUTPUT_PERIOD_SIZE / 4,
 };
 
@@ -87,6 +89,8 @@ struct pcm_config pcm_config_low_latency = {
     .format = PCM_FORMAT_S16_LE,
     .start_threshold = LOW_LATENCY_OUTPUT_PERIOD_SIZE / 4,
     .stop_threshold = INT_MAX,
+    .silence_threshold = 0,
+    .silence_size = 0,
     .avail_min = LOW_LATENCY_OUTPUT_PERIOD_SIZE / 4,
 };
 
@@ -98,6 +102,8 @@ struct pcm_config pcm_config_hdmi_multi = {
     .format = PCM_FORMAT_S16_LE,
     .start_threshold = 0,
     .stop_threshold = INT_MAX,
+    .silence_threshold = 0,
+    .silence_size = 0,
     .avail_min = 0,
 };
 
@@ -121,6 +127,8 @@ struct pcm_config pcm_config_afe_proxy_playback = {
     .format = PCM_FORMAT_S16_LE,
     .start_threshold = AFE_PROXY_PLAYBACK_PERIOD_SIZE,
     .stop_threshold = INT_MAX,
+    .silence_threshold = 0,
+    .silence_size = 0,
     .avail_min = AFE_PROXY_PLAYBACK_PERIOD_SIZE,
 };
 
@@ -135,6 +143,8 @@ struct pcm_config pcm_config_afe_proxy_record = {
     .format = PCM_FORMAT_S16_LE,
     .start_threshold = AFE_PROXY_RECORD_PERIOD_SIZE,
     .stop_threshold = INT_MAX,
+    .silence_threshold = 0,
+    .silence_size = 0,
     .avail_min = AFE_PROXY_RECORD_PERIOD_SIZE,
 };
 
