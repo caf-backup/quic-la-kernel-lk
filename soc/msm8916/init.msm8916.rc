@@ -26,5 +26,5 @@ on fs
     write /sys/class/android_usb/android0/f_ffs/aliases adb
     wait /dev/block/platform/soc.0/7824900.sdhci/by-name/modem
     mount vfat /dev/block/platform/soc.0/7824900.sdhci/by-name/modem /firmware ro context=u:object_r:firmware_file:s0,shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337
-
+    chown bluetooth /dev/smd2 /dev/smd3
 

@@ -1,2 +1,6 @@
 # Serial console
 /dev/ttyHSL0        u:object_r:console_device:s0
+
+# Bluetooth memory devices
+/dev/smd2 u:object_r:bluetoothtbd_device:s0
+/dev/smd3 u:object_r:bluetoothtbd_device:s0
