@@ -14,16 +14,23 @@
 # limitations under the License.
 #
 
-CONFIG_BUILD_ARM_APPENDED_DTB_IMAGE=y
 CONFIG_SERIAL_MSM_HS=y
 CONFIG_SERIAL_MSM_HSL=y
 CONFIG_SERIAL_MSM_HSL_CONSOLE=y
 
-CONFIG_PID_NS=y
-CONFIG_NET_NS=y
-CONFIG_UTS_NS=y
-CONFIG_IPC_NS=y
-
-CONFIG_KEXEC=y
-
 CONFIG_PRONTO_WLAN=y
+
+# Disable unused test modules (no module support).
+# CONFIG_IOSCHED_TEST is not set
+# CONFIG_MSM_DMA_TEST is not set
+# CONFIG_MMC_TEST is not set
+# CONFIG_MMC_BLOCK_TEST is not set
+
+# Disable unused drivers (no module support).
+# CONFIG_INPUT_EVBUG is not set
+# CONFIG_INPUT_GPIO is not set
+# CONFIG_RADIO_IRIS is not set
+# CONFIG_SPI_SPIDEV is not set
+# CONFIG_MOBICORE_SUPPORT is not set
+# CONFIG_MSM_BUSPM_DEV is not set
+# CONFIG_CRYPTO_ANSI_CPRNG is not set
