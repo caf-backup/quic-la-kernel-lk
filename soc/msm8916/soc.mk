@@ -49,6 +49,10 @@ TARGET_KERNEL_SRC := hardware/bsp/kernel/qcom/qcom-msm-3.10
 TARGET_KERNEL_DEFCONFIG := msm8916-perf_defconfig
 TARGET_KERNEL_CONFIGS := $(realpath $(LOCAL_PATH)/soc.kconf)
 
+# Default Keystore HAL
+DEVICE_PACKAGES += \
+	keystore.default
+
 # Include prebuilts to detect audio devices.
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/prebuilts/audio.rc:system/etc/init/audio.rc \
