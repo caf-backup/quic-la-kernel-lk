@@ -51,7 +51,8 @@ TARGET_KERNEL_CONFIGS := $(realpath $(LOCAL_PATH)/soc.kconf)
 
 # Default Keystore HAL
 DEVICE_PACKAGES += \
-	keystore.default
+	keystore.default \
+	bootctrl.default
 
 # Include prebuilts to detect audio devices.
 PRODUCT_COPY_FILES += \
