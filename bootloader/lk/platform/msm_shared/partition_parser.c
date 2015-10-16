@@ -34,6 +34,21 @@
 #define GPT_HEADER_SIZE 92
 #define GPT_LBA 1
 #define PARTITION_ENTRY_SIZE 128
+
+#define clear_and_set_bits(v, m, o, val) \
+	(((v) & (~(m << o))) | (((val) & (m)) << o))
+
+#if MULTIPLE_BOOT_SLOT
+#define MAX_BOOT_SLOT_SUFFIX_LEN  128
+#define SUFFIX_SEPARATOR           ((int)'_')
+#define BOOT_NAME_LABLE_PREFIX     "boot_"
+#define BOOT_NAME_LABLE_PREFIX_LEN (sizeof(BOOT_NAME_LABLE_PREFIX) - 1)
+#define GPT_SIGNATURE_64           (0x5452415020494645ULL)
+
+static const char *boot_slot_suffix = " androidboot.slot_suffix=";
+static char slot_suffix_buf[MAX_BOOT_SLOT_SUFFIX_LEN];
+#endif
+
 static bool flashing_gpt = 0;
 static bool parse_secondary_gpt = 0;
 __WEAK void mmc_set_lun(uint8_t lun)
@@ -73,6 +88,8 @@ static uint32_t partition_parse_gpt_header(uint8_t *buffer,
 
 static uint32_t write_mbr(uint32_t, uint8_t *mbrImage, uint32_t block_size);
 static uint32_t write_gpt(uint32_t size, uint8_t *gptImage, uint32_t block_size);
+static uint32_t write_gpt_ex(uint32_t size, uint8_t *gptImage, uint32_t block_size,
+			     bool skip_erase);
 
 char *ext3_partitions[] =
     { "system", "userdata", "persist", "cache", "tombstones" };
@@ -630,9 +647,18 @@ patch_gpt(uint8_t *gptImage, uint64_t density, uint32_t array_size,
 }
 
 /*
- * Write the GPT to the MMC.
+ * Write the GPT to the MMC, and erase the MMC.
  */
 static unsigned int write_gpt(uint32_t size, uint8_t *gptImage, uint32_t block_size)
+{
+	return write_gpt_ex( size, gptImage, block_size, 0);
+}
+
+/*
+ * Write the GPT to the MMC.
+ */
+static unsigned int write_gpt_ex(uint32_t size, uint8_t *gptImage, uint32_t block_size,
+				 bool skip_erase)
 {
 	unsigned int ret = 1;
 	unsigned int header_size;
@@ -687,11 +713,13 @@ static unsigned int write_gpt(uint32_t size, uint8_t *gptImage, uint32_t block_s
 	patch_gpt(gptImage, device_density, partition_entry_array_size,
 		  max_partition_count, partition_entry_size, block_size);
 
-	/* Erasing the eMMC card before writing */
-	ret = mmc_erase_card(0x00000000, device_density);
-	if (ret) {
-		dprintf(CRITICAL, "Failed to erase the eMMC card\n");
-		goto end;
+	/* Erasing the eMMC card if required before writing */
+	if (!skip_erase) {
+		ret = mmc_erase_card(0x00000000, device_density);
+		if (ret) {
+			dprintf(CRITICAL, "Failed to erase the eMMC card\n");
+			goto end;
+		}
 	}
 
 	/* Writing protective MBR */
@@ -750,7 +778,8 @@ static unsigned int write_gpt(uint32_t size, uint8_t *gptImage, uint32_t block_s
 	mmc_read_partition_table(0);
 	partition_dump();
 	dprintf(CRITICAL, "GPT: Partition Table written\n");
-	memset(primary_gpt_header, 0x00, size);
+	if (!skip_erase)
+		memset(primary_gpt_header, 0x00, size);
 
  end:
 	return ret;
@@ -873,12 +902,13 @@ mbr_fill_name(struct partition_entry *partition_ent, unsigned int type)
 int partition_get_index(const char *name)
 {
 	unsigned int input_string_length = strlen(name);
-	unsigned n;
+	int n;
 
 	if( partition_count >= NUM_PARTITIONS)
 	{
 		return INVALID_PTN;
 	}
+
 	for (n = 0; n < partition_count; n++) {
 		if ((input_string_length == strlen((const char *)&partition_entries[n].name))
 			&& !memcmp(name, &partition_entries[n].name, input_string_length)) {
@@ -954,11 +984,12 @@ void partition_dump()
 	unsigned i = 0;
 	for (i = 0; i < partition_count; i++) {
 		dprintf(SPEW,
-			"ptn[%d]:Name[%s] Size[%llu] Type[%u] First[%llu] Last[%llu]\n",
+			"ptn[%d]:Name[%s] Size[%llu] Type[%u] First[%llu] Last[%llu] flags[%llx]\n",
 			i, partition_entries[i].name, partition_entries[i].size,
 			partition_entries[i].dtype,
 			partition_entries[i].first_lba,
-			partition_entries[i].last_lba);
+			partition_entries[i].last_lba,
+			partition_entries[i].attribute_flag);
 	}
 }
 
@@ -1176,4 +1207,250 @@ bool partition_gpt_exists()
 int partition_read_only(int index)
 {
 	 return partition_entries[index].attribute_flag >> PART_ATT_READONLY_OFFSET;
+}
+
+static bool gpt_hdr_sanity_check(struct gpt_header_t *gpt, uint8_t *part_arr)
+{
+	struct gpt_header_t gpt_copy;
+
+	/* Signature check */
+	if(gpt->signature != GPT_SIGNATURE_64)
+		return 0;
+
+	/* Header CRC check */
+	memcpy(&gpt_copy, gpt, sizeof(struct gpt_header_t));
+	gpt_copy.hdr_crc32 = 0;
+	if(calculate_crc32((uint8_t *)&gpt_copy,
+			   sizeof(struct gpt_header_t)) != gpt->hdr_crc32)
+		return 0;
+
+	/* GUID partition entry CRC check */
+	if(calculate_crc32(part_arr, gpt->num_parts *
+			   sizeof(struct raw_partition_entry)) !=
+			   gpt->part_arr_crc32)
+		return 0;
+
+	return 1;
+}
+
+static uint8_t* partition_table_read( )
+{
+	uint32_t block_size = mmc_get_device_blocksize();
+	uint64_t card_lbas = mmc_get_device_capacity()/block_size;
+	struct gpt_header_t *primary_hdr, *secondary_hdr;
+	int ret, primary_gpt_valid, secondary_gpt_valid;
+	uint32_t gpt_image_sz = 0;
+	uint64_t secondary_lba;
+	uint8_t *gpt_image = 0;
+
+	/*Allocate memory for GPT table*/
+	gpt_image_sz = block_size + (2 * sizeof(struct gpt_header_t)) +
+	     (2 * (sizeof(struct raw_partition_entry) * NUM_PARTITIONS));
+
+	gpt_image = memalign(CACHE_LINE, gpt_image_sz);
+
+	/* Read the MBR, Primary GPT header and all Primary GPT entries */
+	ret = mmc_read(0, (uint32_t *)gpt_image, (2 * block_size) +
+                          sizeof(struct raw_partition_entry) * NUM_PARTITIONS);
+	if(ret)
+		goto end;
+
+	primary_hdr = (struct gpt_header_t *)(gpt_image + block_size);
+
+	/*Read the Secondary GPT entries*/
+	ret = mmc_read((primary_hdr->backup_lba - 32) * block_size,
+		       (uint32_t *)(gpt_image + (34 * block_size)),
+		       (sizeof(struct raw_partition_entry) * NUM_PARTITIONS) +
+		       block_size);
+	if(ret)
+		goto end;
+
+	return gpt_image;
+end:
+	dprintf(SPEW,"ERROR: freeing up allocated memory\n");
+	if(gpt_image)
+		free(gpt_image);
+	return NULL;
+}
+
+static uint32_t partition_table_sync(uint8_t *gpt_image, uint32_t sz)
+{
+	uint32_t ret;
+
+	flashing_gpt = 1;
+	ret = write_gpt_ex(sz, gpt_image, mmc_get_device_blocksize(), 1);
+	flashing_gpt = 0;
+	return ret;
+}
+
+static unsigned long long partition_get_attribute_flag(int index)
+{
+	return partition_entries[index].attribute_flag;
+}
+
+static int partition_set_attribute(uint8_t *gpt_image, int index,
+				   partition_flag_type flag_type, uint64_t value)
+{
+	unsigned int block_size = mmc_get_device_blocksize();
+	struct raw_partition_entry *primary_partition_array =
+					(struct raw_partition_entry *)(gpt_image + (2 * block_size));
+	struct raw_partition_entry *secondary_partition_array =
+					primary_partition_array + NUM_PARTITIONS;
+
+	switch (flag_type) {
+	case FLAG_TYPE_TRIES: {
+		(primary_partition_array + index)->attribute_flag =
+		clear_and_set_bits((primary_partition_array + index)->attribute_flag,
+				   PART_ATT_TRIES_MASK, PART_ATT_TRIES_OFFSET, value);
+		(secondary_partition_array + index)->attribute_flag =
+		clear_and_set_bits((secondary_partition_array + index)->attribute_flag,
+				   PART_ATT_TRIES_MASK, PART_ATT_TRIES_OFFSET, value);
+		return 1;
+	}
+	break;
+	case FLAG_TYPE_PRIORITY: {
+		(primary_partition_array + index)->attribute_flag =
+		clear_and_set_bits((primary_partition_array + index)->attribute_flag,
+				   PART_ATT_PRIORITY_MASK, PART_ATT_PRIORITY_OFFSET, value);
+		(secondary_partition_array + index)->attribute_flag =
+		clear_and_set_bits((secondary_partition_array + index)->attribute_flag,
+				   PART_ATT_PRIORITY_MASK, PART_ATT_PRIORITY_OFFSET, value);
+		return 1;
+	}
+	break;
+	default:
+		 dprintf(CRITICAL,"Unhandled flag %d\n", flag_type);
+	}
+	return 0;
+}
+
+static uint64_t partition_get_attribute(int index, partition_flag_type flag_type)
+{
+	unsigned long long attr;
+
+	attr = partition_get_attribute_flag(index);
+
+	switch (flag_type) {
+	case FLAG_TYPE_SUCCESS:
+		return (attr >> PART_ATT_SUCCESS_OFFSET) & PART_ATT_SUCCESS_MASK;
+	case FLAG_TYPE_TRIES:
+		return (attr >> PART_ATT_TRIES_OFFSET) & PART_ATT_TRIES_MASK;
+	case FLAG_TYPE_PRIORITY:
+		return (attr >> PART_ATT_PRIORITY_OFFSET) & PART_ATT_PRIORITY_MASK;
+	}
+
+	return attr;
+}
+
+static bool is_kernel_type(int index)
+{
+//TODO: upgrade to identify using GUID when GUID is defined.
+	return (!strncmp((const char*)partition_entries[index].name,
+			 BOOT_NAME_LABLE_PREFIX, BOOT_NAME_LABLE_PREFIX_LEN));
+}
+
+static bool is_success_set(int index)
+{
+	if(partition_get_attribute(index, FLAG_TYPE_SUCCESS))
+		return 1;
+	else
+		return 0;
+}
+
+static uint64_t is_tries_valid(int index)
+{
+	return partition_get_attribute(index, FLAG_TYPE_TRIES);
+}
+
+static void decrement_tries_count(uint8_t *gpt_image, int index)
+{
+	uint32_t try_count = partition_get_attribute(index, FLAG_TYPE_TRIES);
+	dprintf(SPEW,"decrementing try for %d.\n", index);
+	if(try_count)
+		partition_set_attribute(gpt_image, index,
+					FLAG_TYPE_TRIES, --try_count);
+}
+
+int partition_clear_attribute(int index, partition_flag_type flag)
+{
+	uint8_t *gpt_image = NULL;
+	uint32_t ret;
+	unsigned int sz = 34304;
+
+	gpt_image = partition_table_read();
+	partition_set_attribute(gpt_image, index, flag, 0);
+	ret = partition_table_sync(gpt_image, sz);
+
+	if(gpt_image)
+		free(gpt_image);
+
+	return ret;
+}
+
+int partition_get_bootable_index()
+{
+	unsigned n;
+	int priority = 0;
+	int curr_part_priority;
+	int kernel_part = INVALID_PTN;
+	uint8_t *gpt_image = NULL;
+	unsigned int sz = 34304;
+	bool sync_partition_table = 0;
+
+	if(partition_count >= NUM_PARTITIONS)
+		return INVALID_PTN;
+
+	gpt_image = partition_table_read();
+
+	for (n = 0; n < partition_count; n++) {
+		if (!is_kernel_type(n))
+			continue;
+		if (!(is_success_set(n) || is_tries_valid(n))) {
+			if(partition_get_attribute(n, FLAG_TYPE_PRIORITY)) {
+				partition_set_attribute(gpt_image, n,
+							FLAG_TYPE_PRIORITY, 0);
+				sync_partition_table = 1;
+			}
+			continue;
+		}
+		curr_part_priority = partition_get_attribute(n, FLAG_TYPE_PRIORITY);
+		if (curr_part_priority && (curr_part_priority > priority)) {
+			priority = curr_part_priority;
+			kernel_part = n;
+		} else
+			continue;
+		dprintf(SPEW, "Usable kernel image at index %d, priority %d.\n",
+			n, curr_part_priority);
+	}
+	if (kernel_part != INVALID_PTN) {
+		dprintf(CRITICAL,"Will attempt boot from part index %d.\n",kernel_part);
+		if( !is_success_set(kernel_part) &&
+		    is_tries_valid(kernel_part)) {
+			decrement_tries_count(gpt_image, kernel_part);
+			sync_partition_table = 1;
+		}
+		strncpy(slot_suffix_buf, boot_slot_suffix, MAX_BOOT_SLOT_SUFFIX_LEN);
+		strncat(slot_suffix_buf,
+			strchr((const char *)partition_entries[kernel_part].name,
+                        SUFFIX_SEPARATOR), MAX_BOOT_SLOT_SUFFIX_LEN);
+	} else
+		dprintf(CRITICAL,"No bootable partitions found.\n");
+
+	if(sync_partition_table)
+		partition_table_sync(gpt_image, sz);
+
+	if(gpt_image)
+		free(gpt_image);
+
+        return kernel_part;
+}
+
+uint16_t boot_slot_cmdline_strlen( )
+{
+	return (strlen(slot_suffix_buf) + strlen(boot_slot_suffix));
+}
+
+char *boot_slot_suffix_str( )
+{
+	return slot_suffix_buf;
 }

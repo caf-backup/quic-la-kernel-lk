@@ -74,6 +74,12 @@
 #define UNIQUE_PARTITION_GUID_SIZE 16
 #define NUM_PARTITIONS             128
 #define PART_ATT_READONLY_OFFSET   60
+#define PART_ATT_SUCCESS_OFFSET    56
+#define PART_ATT_TRIES_OFFSET      52
+#define PART_ATT_PRIORITY_OFFSET   48
+#define PART_ATT_SUCCESS_MASK      ((uint64_t)0x1)
+#define PART_ATT_TRIES_MASK        ((uint64_t)0xF)
+#define PART_ATT_PRIORITY_MASK     ((uint64_t)0xF)
 
 /* Some useful define used to access the MBR/EBR table */
 #define BLOCK_SIZE                0x200
@@ -146,6 +152,12 @@
      *((x)+6) = (((y) >> 48) & 0xff);   \
      *((x)+7) = (((y) >> 56) & 0xff);
 
+typedef enum {
+	FLAG_TYPE_SUCCESS = 1,
+	FLAG_TYPE_TRIES,
+	FLAG_TYPE_PRIORITY,
+} partition_flag_type;
+
 /* Unified mbr and gpt entry types */
 struct partition_entry {
 	unsigned char type_guid[PARTITION_TYPE_GUID_SIZE];
@@ -158,6 +170,41 @@ struct partition_entry {
 	unsigned char name[MAX_GPT_NAME_SIZE];
 	uint8_t lun;
 };
+
+struct gpt_header_t {
+	uint64_t signature;
+	uint32_t rev;
+	uint32_t hdr_size;
+	uint32_t hdr_crc32;
+	uint32_t reserved;
+	uint64_t curr_lba;
+	uint64_t backup_lba;
+	uint64_t first_usable_lba;
+	uint64_t last_usable_lba;
+	uint8_t  disk_guid[PARTITION_TYPE_GUID_SIZE];
+	uint64_t start_lba_part_array;
+	uint32_t num_parts;
+	uint32_t part_size;
+	uint32_t part_arr_crc32;
+	uint8_t  reserved_zeros[420];
+} __attribute__((packed)) gpt_header_t;
+
+struct raw_partition_entry {
+	uint8_t type_guid[PARTITION_TYPE_GUID_SIZE];
+	uint8_t unique_partition_guid[UNIQUE_PARTITION_GUID_SIZE];
+	uint64_t first_lba;
+	uint64_t last_lba;
+	uint64_t attribute_flag;
+	uint8_t name[MAX_GPT_NAME_SIZE];
+} __attribute__ ((packed));
+
+typedef struct
+{
+	uint32_t data1;
+	uint16_t data2;
+	uint16_t data3;
+	uint8_t  data4[8];
+} __attribute__((packed)) guid_t;
 
 /* Partition info requested by app layer */
 struct partition_info {
@@ -172,6 +219,11 @@ uint8_t partition_get_lun(int index);
 unsigned int partition_read_table();
 unsigned int write_partition(unsigned size, unsigned char *partition);
 bool partition_gpt_exists();
+int partition_get_bootable_index();
+uint16_t boot_slot_cmdline_strlen();
+char *boot_slot_suffix_str();
+int partition_clear_attribute(int index, partition_flag_type flag);
+
 /* Return the partition offset & size to app layer
  * Caller should validate the size & offset !=0
  */
