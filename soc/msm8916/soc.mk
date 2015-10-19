@@ -54,6 +54,10 @@ DEVICE_PACKAGES += \
 	keystore.default \
 	bootctrl.default
 
+# Include Qualcomm Audio HAL implementation
+DEVICE_PACKAGES += \
+	audio.primary.msm8916
+
 # Include prebuilts to detect audio devices.
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/prebuilts/audio.rc:system/etc/init/audio.rc \
