@@ -47,7 +47,7 @@ BOARD_SEPOLICY_DIRS += \
 # Set up the local kernel.
 TARGET_KERNEL_SRC := hardware/bsp/kernel/qcom/qcom-msm-3.10
 TARGET_KERNEL_DEFCONFIG := msm8916-perf_defconfig
-TARGET_KERNEL_CONFIGS := $(realpath $(LOCAL_PATH)/soc.kconf)
+$(call add_kernel_configs, $(realpath $(LOCAL_PATH)/soc.kconf))
 
 # Default Keystore HAL
 DEVICE_PACKAGES += \
