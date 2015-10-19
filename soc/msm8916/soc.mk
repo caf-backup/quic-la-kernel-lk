@@ -49,12 +49,15 @@ TARGET_KERNEL_SRC := hardware/bsp/kernel/qcom/qcom-msm-3.10
 TARGET_KERNEL_DEFCONFIG := msm8916-perf_defconfig
 $(call add_kernel_configs, $(realpath $(LOCAL_PATH)/soc.kconf))
 
-# Default Keystore HAL
+# Default Keystore HAL.
 DEVICE_PACKAGES += \
-	keystore.default \
+	keystore.default
+
+# Default Bool Control HAL.
+DEVICE_PACKAGES += \
 	bootctrl.default
 
-# Include Qualcomm Audio HAL implementation
+# Include Qualcomm Audio HAL implementation.
 DEVICE_PACKAGES += \
 	audio.primary.msm8916
 
