@@ -65,23 +65,25 @@ DEVICE_PACKAGES += \
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/prebuilts/audio.rc:system/etc/init/audio.rc \
 
+PRODUCT_LIBRARY_PATH := $(TOP)/vendor/bsp/qcom/device/dragonboard/linux_410c_board_support_package_LA.BR.1.2.4_rb1.10
+
 # Audio daemons.
 PRODUCT_COPY_FILES += \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/daemons/rmt_storage:/system/bin/rmt_storage \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/daemons/qmuxd:/system/bin/qmuxd \
+	$(PRODUCT_LIBRARY_PATH)/bin/rmt_storage:/system/bin/rmt_storage \
+	$(PRODUCT_LIBRARY_PATH)/bin/qmuxd:/system/bin/qmuxd \
 
 # Audio libs.
 PRODUCT_COPY_FILES += \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmi_common_so.so:/system/lib/libqmi_common_so.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmi_csi.so:/system/lib/libqmi_csi.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libsmemlog.so:/system/lib/libsmemlog.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmi_encdec.so:/system/lib/libqmi_encdec.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libconfigdb.so:/system/lib/libconfigdb.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libdiag.so:/system/lib/libdiag.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libdsutils.so:/system/lib/libdsutils.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmi.so:/system/lib/libqmi.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libxml.so:/system/lib/libxml.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libidl.so:/system/lib/libidl.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libmdmdetect.so:/system/lib/libmdmdetect.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmi_client_qmux.so:/system/lib/libqmi_client_qmux.so \
-	$(TOP)/hardware/bsp/qcom/soc/msm8916/prebuilts/libs/libqmiservices.so:/system/lib/libqmiservices.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_common_so.so:/system/lib/libqmi_common_so.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_csi.so:/system/lib/libqmi_csi.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libsmemlog.so:/system/lib/libsmemlog.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_encdec.so:/system/lib/libqmi_encdec.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libconfigdb.so:/system/lib/libconfigdb.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libdiag.so:/system/lib/libdiag.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libdsutils.so:/system/lib/libdsutils.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi.so:/system/lib/libqmi.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libxml.so:/system/lib/libxml.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libidl.so:/system/lib/libidl.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libmdmdetect.so:/system/lib/libmdmdetect.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_client_qmux.so:/system/lib/libqmi_client_qmux.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmiservices.so:/system/lib/libqmiservices.so \
