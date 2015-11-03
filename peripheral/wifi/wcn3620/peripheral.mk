@@ -18,13 +18,6 @@ WLAN_BSP_SRC = hardware/bsp/qcom/peripheral/wifi/wcn3620
 WLAN_BIN_SRC = vendor/bsp/qcom/device/dragonboard/linux_410c_board_support_package_LA.BR.1.2.4_rb1.10/etc/firmware/wlan/prima/
 FIRMWARE_DST = system/vendor/firmware
 
-# Wireless peripheral firmware -- loaded by drivers/net/wireless/wcnss.
-WCNSS_FILES := mdt b00 b01 b02 b04 b06 b09 b10 b11
-WCNSS_COPY_FILES += \
-  $(join $(patsubst %, $(WLAN_BSP_SRC)/wcnss.%, $(WCNSS_FILES)), $(patsubst %, :$(FIRMWARE_DST)/wcnss.%, $(WCNSS_FILES)))
-
-PRODUCT_COPY_FILES += $(WCNSS_COPY_FILES)
-
 # WiFi driver -- loaded by drivers/staging/prima.
 WLAN_FIRMWARE_DST = $(FIRMWARE_DST)/wlan/prima
 PRIMA_FILES = \
