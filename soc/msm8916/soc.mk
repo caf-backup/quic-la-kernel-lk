@@ -53,9 +53,9 @@ $(call add_kernel_configs, $(realpath $(LOCAL_PATH)/soc.kconf))
 DEVICE_PACKAGES += \
 	keystore.default
 
-# Default Bool Control HAL.
+# Include Qualcomm Bool Control HAL.
 DEVICE_PACKAGES += \
-	bootctrl.default
+	bootctrl.msm8916
 
 # Include Qualcomm Audio HAL implementation.
 DEVICE_PACKAGES += \
