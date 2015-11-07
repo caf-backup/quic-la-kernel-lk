@@ -456,12 +456,14 @@ unsigned target_pause_for_battery_charge(void)
 	* fastboot reboot is warm boot with PON hard reset bit not set
 	* adb reboot is a cold boot with PON hard reset bit set
 	*/
+#if ENABLE_CHARGER_DETECTION
 	if (is_cold_boot &&
 			(!(pon_reason & HARD_RST)) &&
 			(!(pon_reason & KPDPWR_N)) &&
 			((pon_reason & USB_CHG) || (pon_reason & DC_CHG) || (pon_reason & CBLPWR_N)))
 		return 1;
 	else
+#endif
 		return 0;
 }
 
