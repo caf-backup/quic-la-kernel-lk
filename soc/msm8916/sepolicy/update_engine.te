@@ -1,0 +1,7 @@
+# This file contains msm8916-specific SELinux policy for
+# update_engine. For the main update_engine policy, see
+# external/sepolicy/update_engine.te
+
+# Allow read/write on whole disk. This is needed because the msm8916
+# boot_control HAL modifies the partition table when managing A/B.
+allow update_engine mmc_block_device:blk_file rw_file_perms;
