@@ -74,16 +74,22 @@ PRODUCT_COPY_FILES += \
 
 # Audio libs.
 PRODUCT_COPY_FILES += \
-	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_common_so.so:/system/lib/libqmi_common_so.so \
-	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_csi.so:/system/lib/libqmi_csi.so \
-	$(PRODUCT_LIBRARY_PATH)/lib/libsmemlog.so:/system/lib/libsmemlog.so \
-	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_encdec.so:/system/lib/libqmi_encdec.so \
 	$(PRODUCT_LIBRARY_PATH)/lib/libconfigdb.so:/system/lib/libconfigdb.so \
 	$(PRODUCT_LIBRARY_PATH)/lib/libdiag.so:/system/lib/libdiag.so \
 	$(PRODUCT_LIBRARY_PATH)/lib/libdsutils.so:/system/lib/libdsutils.so \
-	$(PRODUCT_LIBRARY_PATH)/lib/libqmi.so:/system/lib/libqmi.so \
-	$(PRODUCT_LIBRARY_PATH)/lib/libxml.so:/system/lib/libxml.so \
 	$(PRODUCT_LIBRARY_PATH)/lib/libidl.so:/system/lib/libidl.so \
 	$(PRODUCT_LIBRARY_PATH)/lib/libmdmdetect.so:/system/lib/libmdmdetect.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi.so:/system/lib/libqmi.so \
 	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_client_qmux.so:/system/lib/libqmi_client_qmux.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_common_so.so:/system/lib/libqmi_common_so.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_csi.so:/system/lib/libqmi_csi.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libqmi_encdec.so:/system/lib/libqmi_encdec.so \
 	$(PRODUCT_LIBRARY_PATH)/lib/libqmiservices.so:/system/lib/libqmiservices.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libsmemlog.so:/system/lib/libsmemlog.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libxml.so:/system/lib/libxml.so \
+
+# Bluetooth libs.
+PRODUCT_COPY_FILES += \
+	$(PRODUCT_LIBRARY_PATH)/lib/libbtnv.so:/system/lib/libbtnv.so \
+	$(PRODUCT_LIBRARY_PATH)/lib/libbt-vendor.so:/system/lib/libbt-vendor.so \
+
